@@ -3,6 +3,9 @@ uuid = "1ea8c22c-f78a-4936-8625-1fcff2c9b5dd"
 authors = ["Michael Hartisch", "Tom Klein"]
 version = "0.1.0"
 
+[deps]
+Coverage = "a2441757-f6aa-5fb2-8edb-039e3f45d037"
+
 [compat]
 julia = "1"
 
