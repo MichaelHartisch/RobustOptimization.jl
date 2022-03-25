@@ -1,0 +1,13 @@
+name = "RobustOptimization"
+uuid = "1ea8c22c-f78a-4936-8625-1fcff2c9b5dd"
+authors = ["Michael Hartisch", "Tom Klein"]
+version = "0.1.0"
+
+[compat]
+julia = "1"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
