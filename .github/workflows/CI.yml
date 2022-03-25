@@ -39,5 +39,7 @@ jobs:
         with:
           files: lcov.info
       - uses: julia-actions/julia-uploadcoveralls@v1
+        with:
+          repo_token: v2JP4vXT83oYwm9ws2My3snQHAdyl01xy
         env:
           COVERALLS_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
