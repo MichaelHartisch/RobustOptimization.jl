@@ -14,6 +14,7 @@ w4 = p1u12 + p2u22
 
  scenarios [1 2; 3 4], [:a, :b], 2:3
 """
+
 import JuMP
 
 struct SoysterUncertain

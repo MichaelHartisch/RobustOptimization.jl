@@ -28,4 +28,4 @@ function showMe(unc::Uncertain)
 end
 
 unc = Uncertain(rob,"2",10,14)
-showMe(unc)
+#showMe(unc)

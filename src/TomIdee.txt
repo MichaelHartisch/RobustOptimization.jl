@@ -1,0 +1,72 @@
+#1 @Variablen(x,x,x,x, UNcertain)
+    eigener Variablen Typ der Mit uncertains umgehen kann
+    Wie kann ichauf variablen @fuktion zugreifen, bzw neue definieren
+# wenn Var definiert soll uncertainty in einem Dictionary gespeichert werden
+JuMP Add_varaibles
+Jump nim Variable in dictionary auf 
+    semin ingfinite varoable 316 zeile
+    Robust Model Extension Jumper.jl 
+    infinity variable 327 Muss ich machen
+    Variable Data
+   
+
+
+
+#Ablauf
+1. Alle Daten initialiseren
+2. Model initialisieren
+3. @var,@objective, @ constraints
+    3.1 Jumper macht daten haushalt dictionarys
+4. Solve 
+4.1 löst lps mit teil daten aus den Dictionaries 
+
+
+#Aufbau
+Beispiele Jumper inventory 44
+ Model >  Variable  > Uncertain
+          >  Variable  > Adaptive (t) t gibt stage an also nicht runde sondern einzeln
+          > Constraint > Uncertain(Gamma)
+          >  Objective > Uncertain()
+
+Model
+    Type 
+    Name
+
+Variable    <: Abstacrt VAriable
+    Name    
+    Lower
+    Upper
+    Type
+   
+Uncertain   
+    Name
+    Type
+    @uncertain (Model, name,bereiche, lower, upper) 
+        BOUNDING VIA binary
+Adaptive
+    Name
+    Type
+    dependency
+    policy
+    @adaptive (model,Name,policy,depends)
+Objective
+    Model
+    Mode
+    Name 
+    Type
+
+Constraint
+    Model
+    Mode
+    Name
+    Type
+
+
+#Datenhaltung
+in Dictionaries
+varDict: Cleverdict oder Dict? (Index, Welcher Typ)
+constaintDIct : ABstact Containt, Index: Contraint Data
+
+Name_to_var
+
+JumpExtenstions 58
