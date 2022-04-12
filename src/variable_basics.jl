@@ -39,12 +39,14 @@ function JuMP.build_variable(
     end
     # get the parameter_refs
     thisStage = var_type.stage
-
+    
     #ToDO
     if typeof(var_type) == Uncertain
         return UncertainVariable(info, thisStage)
     elseif typeof(var_type) == Decision
-        return DecisionVariable(info, thisStage)
+        thisPolicy = var_type.policy
+        thisDependencies = var_type.depends_on
+        return DecisionVariable(info, thisStage,thisPolicy,thisDependencies)
     else
         _error("Weird Variable Type!")
     end
