@@ -234,6 +234,17 @@ function JuMP.start_value(vref::RobustVariableRef)::Union{Nothing,Float64}
 end
 function JuMP.set_start_value(vref::RobustVariableRef, start)
     info = variable_info(vref)
+    # checking ot of bounds
+    if info.has_ub && start > info.upper_bound
+        error(
+            "Unable to set start_value of $(vref) to $(start) because it is out of upper bounds",
+        )
+    end
+    if info.has_lb && start < info.lower_bound
+        error(
+            "Unable to set start_value of $(vref) to $(start) because it is out of lower bounds",
+        )
+    end
     return update_variable_info(
         vref,
         JuMP.VariableInfo(
@@ -325,4 +336,8 @@ function JuMP.unset_integer(vref::RobustVariableRef)
             false,
         ),
     )
+end
+
+function has_depends()
+    
 end

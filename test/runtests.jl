@@ -26,18 +26,20 @@ using Test
 
         #test infos
         @test has_lower_bound(x_interval) == true
-        lb = lower_bound(x_interval)
-        @test lb == 1.0
+        @test lower_bound(x_interval) == 1.0
         @test has_upper_bound(x_interval) == true
-        ub = upper_bound(x_interval)
-        @test ub == 3.5
+        @test upper_bound(x_interval)== 3.5
 
         #test setter
         set_lower_bound(x_interval,0.5)
-        @test lb - lower_bound(x_interval) == 0.5
+        @test lower_bound(x_interval) == 0.5
         set_upper_bound(x_interval,5.5)
-        @test ub - upper_bound(x_interval) == -2.0
+        @test upper_bound(x_interval) == 5.5
 
+        #test start value
+        set_start_value(x_interval,2.0)
+        @test start_value(x_interval) == 2.0
+        
         #test delete
         delete_lower_bound(x_interval)
         @test has_lower_bound(x_interval) == false
@@ -47,20 +49,18 @@ using Test
         #test fixing
         fix(x_interval, 4)
         @test is_fixed(x_interval) == true
+
         #test unfix
         unfix(x_interval)
         @test is_fixed(x_interval) == false
-
-        #test start value
-        set_start_value(x_interval,2.0)
-        @test start_value(x_interval) == 2.0
 
         #test binary
         set_binary(x_interval)
         @test is_binary(x_interval) == true
         unset_binary(x_interval)
         @test is_binary(x_interval) == false
-        #test 
+        
+        #test integer
         set_integer(x_interval)
         @test is_integer(x_interval) == true
         unset_integer(x_interval)
