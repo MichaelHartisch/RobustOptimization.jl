@@ -79,8 +79,9 @@ using Test
     @testset "constraint" begin
         model = RobustModel() 
         @variable(model, 0 <= y <= 1,Uncertain(1))
-        @constraint(model, my_con, 2y <= 1, MyTag("my_prefix"))
-        print(my_con)
+        @constraint(model, uncConst, 2y <= 1, UncertaintySetConstraint("1"))
+        #@constraint(model, modConst, 2y <= 1, UncertaintySet("1"))
+        print(uncConst)
 
     end
  
@@ -93,7 +94,7 @@ using Test
     #TODO get inner of Decision
     @test m.var_to_name[1] == "y"
     @test m.nextvaridx == length(m.uncertainVariables)+length(m.decisionVariables)
-    #con =m.uncertainConstraints[RobustOptimization.ConstraintIndex(1)]
+    #con =m.uncertainConstraints[RobustOptimization.Int(1)]
     #@test con.set == MathOptInterface.LessThan{Float64}(10.0)
 
     ########### TEST Variable Basics

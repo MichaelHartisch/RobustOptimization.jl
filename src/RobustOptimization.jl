@@ -3,39 +3,37 @@ module RobustOptimization
 using JuMP
 
 
-struct ConstraintIndex
-    value::Int # Index in `model.constraints`
-end
+
 
 mutable struct RobustModel <: JuMP.AbstractModel
-    nextvaridx::Int                                 # Next variable index is nextvaridx+1
+    nextconidx::Int          
+    nextvaridx::Int                         # Next variable index is nextvaridx+1
     decisionVariables::Dict{Int,JuMP.AbstractVariable}
-    #adaptiveVariables::Dict{Int,JuMP.AbstractVariable}
     uncertainVariables::Dict{Int,JuMP.AbstractVariable}
     var_index_to_type_index::Dict{Int,Int}
     type_index_to_var_index::Dict{Int,Int}
     var_to_name::Dict{Int,String}                  # Map varidx -> name
     name_to_var::Union{Dict{String,Int},Nothing}  # Map varidx -> name
-    decisionConstraints::Dict{ConstraintIndex,JuMP.AbstractConstraint}      # Map conidx -> variable
-    uncertainConstraints::Dict{ConstraintIndex,JuMP.AbstractConstraint}      # Map conidx -> variable
-    con_to_name::Dict{ConstraintIndex,String}      # Map conidx -> name
-    name_to_con::Union{Dict{String,ConstraintIndex},Nothing}                     # Map name -> conidx
+    decisionConstraints::Dict{Int,JuMP.AbstractConstraint}      # Map conidx -> variable
+    uncertainConstraints::Dict{Int,JuMP.AbstractConstraint}      # Map conidx -> variable
+    con_to_name::Dict{Int,String}      # Map conidx -> name
+    name_to_con::Union{Dict{String,Int},Nothing}                     # Map name -> conidx
     objectivesense::OptimizationSense
     uncertain_objective_function::JuMP.AbstractJuMPScalar
     obj_dict::Dict{Symbol,Any}
     function RobustModel()
         return new(
             0,
+            0,
             Dict{Int,JuMP.AbstractVariable}(),
-            #Dict{Int,JuMP.AbstractVariable}(),
             Dict{Int,JuMP.AbstractVariable}(),
             Dict{Int,Int}(),
             Dict{Int,Int}(),
             Dict{Int,String}(),
             nothing,                        # Variables
-            Dict{ConstraintIndex,JuMP.AbstractConstraint}(),
-            Dict{ConstraintIndex,JuMP.AbstractConstraint}(),
-            Dict{ConstraintIndex,String}(),
+            Dict{Int,JuMP.AbstractConstraint}(),
+            Dict{Int,JuMP.AbstractConstraint}(),
+            Dict{Int,String}(),
             nothing,            # Constraints
             FEASIBILITY_SENSE,
             zero(JuMP.GenericAffExpr{Float64,UncertainVariableRef}),
@@ -104,7 +102,7 @@ function JuMP.show_constraints_summary(io::IO, model::RobustModel)
 end
 function JuMP.constraints_string(print_mode, model::RobustModel)
     strings = String[]
-    # Sort by creation order, i.e. ConstraintIndex value
+    # Sort by creation order, i.e. Int value
     uncertainConstraints = sort(collect(model.uncertainConstraints), by = c -> c.first.value)
     for (index, constraint) in uncertainConstraints
         push!(strings, JuMP.constraint_string(print_mode, constraint))

@@ -1,7 +1,7 @@
 function JuMP.add_variable(
     model::RobustModel,
     v::RobustVariable,
-    name::String = ""
+    name::String,
     )
 
     model.nextvaridx+=1
