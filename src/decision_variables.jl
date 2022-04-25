@@ -13,7 +13,7 @@ struct DecisionVariable<: RobustVariable
     policy::String
     depends_on::Dict{Int64, AbstractVariable}
 end
-
+export Decision, DecisionVariable
 #Decision abhängig von Uncertain
 # policy und depends on
 # policy ist ein keyord wie affine was dann nachher einen switch 

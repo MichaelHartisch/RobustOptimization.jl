@@ -9,6 +9,4 @@
 4  Formulate the robust counterpart
 5  Solve the (adjustable) robust counterpart 
 
-
-
 """

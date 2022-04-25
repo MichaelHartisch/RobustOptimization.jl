@@ -6,22 +6,25 @@ using Test
     # Write your tests here.
     @testset "RobustOptimization.jl" begin
     # Write your tests here.
-    @test RobustOptimization.testfunc() == 0
-    m = RobustOptimization.RobustModel()
+  
+    m = RobustModel()
     
-    @variable(m, 0 <= y <= 1,RobustOptimization.Uncertain(1))
+    @variable(m, 0 <= y <= 1,Uncertain(1))
 
 
-    @variable(m, 1 <= x_interval <= 3.5,RobustOptimization.Decision(1,"test",m.uncertainVariables))
+    @variable(m, 1 <= x_interval <= 3.5,Decision(1,"test",m.uncertainVariables))
     #Add VariableTest
     @testset "lowerbound" begin
         #init
-        mod = RobustOptimization.RobustModel()
+        mod = RobustModel()
         #add vars
-        @variable(mod, 0 <= y <= 1,RobustOptimization.Uncertain(1))
-        @variable(mod, 1 <= x_interval <= 3.5,RobustOptimization.Decision(1,"test",mod.uncertainVariables))
+        @variable(mod, 0 <= y <= 1,Uncertain(1))
+        @variable(mod, 0 <= z <= 1,Uncertain(1))
+        @variable(mod, 1 <= x_interval <= 3.5,Decision(1,"test",mod.uncertainVariables))
+
+       
         #test add vars
-        @test mod.var_to_name[2] == "x_interval"
+        @test mod.var_to_name[3] == "x_interval"
         @test mod.var_to_name[1] == "y"
 
         #test infos
@@ -73,9 +76,13 @@ using Test
         
     end
 
-    
+    @testset "constraint" begin
+        model = Model() 
+        @variable(model, x)
+        @constraint(model, my_con, 2x <= 1, MyTag("my_prefix"))
 
 
+    end
  
   
 

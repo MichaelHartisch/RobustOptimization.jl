@@ -3,9 +3,6 @@ module RobustOptimization
 using JuMP
 
 
-
-testfunc() = 0
-
 struct ConstraintIndex
     value::Int # Index in `model.constraints`
 end
@@ -144,5 +141,5 @@ function JuMP.objective_function(model::RobustModel, FT::Type)
 end
 
 JuMP.num_variables(m::RobustModel) = m.nextvaridx
-
+export RobustModel
 end

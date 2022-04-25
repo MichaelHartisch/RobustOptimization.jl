@@ -22,7 +22,6 @@ function JuMP.add_variable(
     print("Now Size of uncertainVariables ",length(model.uncertainVariables),"\n")
     print("Now Size of decisionVariables ",length(model.decisionVariables),"\n")
     JuMP.set_name(vref, name)
-    #return vref
     return vref
 end
 
@@ -46,12 +45,12 @@ function JuMP.build_variable(
     elseif typeof(var_type) == Decision
         thisPolicy = var_type.policy
         thisDependencies = var_type.depends_on
+        print(thisDependencies)
         return DecisionVariable(info, thisStage,thisPolicy,thisDependencies)
     else
         _error("Weird Variable Type!")
     end
 end
-
 
 function Base.:(==)(v::RobustVariableRef, w::RobustVariableRef)
     return v.model === w.model && v.idx == w.idx
@@ -69,8 +68,6 @@ function JuMP.delete(model::RobustModel, vref::RobustVariableRef)
     end
     return delete!(model.var_to_name, vref.variable_index)
 end
-
-
 
 
 function JuMP.delete(model::RobustModel, vrefs::Vector{RobustVariableRef})
@@ -140,6 +137,9 @@ function JuMP.delete_lower_bound(vref::RobustVariableRef)
         ),
     )
 end
+
+
+
 
 JuMP.has_upper_bound(vref::RobustVariableRef) = variable_info(vref).has_ub
 function JuMP.upper_bound(vref::RobustVariableRef)::Float64

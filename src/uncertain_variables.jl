@@ -9,3 +9,4 @@ struct UncertainVariable<: RobustVariable
     info::JuMP.VariableInfo
     stage::Int
 end
+ export Uncertain, UncertainVariable
