@@ -1,7 +1,7 @@
 module RobustOptimization
 
 using JuMP
-
+using MathOptInterface
 
 
 
@@ -14,8 +14,10 @@ mutable struct RobustModel <: JuMP.AbstractModel
     type_index_to_var_index::Dict{Int,Int}
     var_to_name::Dict{Int,String}                  # Map varidx -> name
     name_to_var::Union{Dict{String,Int},Nothing}  # Map varidx -> name
-    decisionConstraints::Dict{Int,JuMP.AbstractConstraint}      # Map conidx -> variable
-    uncertainConstraints::Dict{Int,JuMP.AbstractConstraint}      # Map conidx -> variable
+    uncertaintySetConstraints::Dict{Int,JuMP.AbstractConstraint}      # Map conidx -> variable
+    uncertainConstraints::Dict{Int,JuMP.AbstractConstraint} 
+    con_index_to_type_index::Dict{Int,Int}
+    type_index_to_con_index::Dict{Int,Int}     # Map conidx -> variable
     con_to_name::Dict{Int,String}      # Map conidx -> name
     name_to_con::Union{Dict{String,Int},Nothing}                     # Map name -> conidx
     objectivesense::OptimizationSense
@@ -33,6 +35,8 @@ mutable struct RobustModel <: JuMP.AbstractModel
             nothing,                        # Variables
             Dict{Int,JuMP.AbstractConstraint}(),
             Dict{Int,JuMP.AbstractConstraint}(),
+            Dict{Int,Int}(),
+            Dict{Int,Int}(),
             Dict{Int,String}(),
             nothing,            # Constraints
             FEASIBILITY_SENSE,
@@ -51,9 +55,11 @@ include("datatypes.jl")
 include("uncertain_variables.jl")
 include("decision_variables.jl")
 include("variable_basics.jl")
+include("constraints_basics.jl")
+include("uncertain_constraints.jl")
+include("uncertainty_set_constraints.jl")
 
-
-# Names
+# Names Variables
 JuMP.name(vref::AbstractVariableRef) = vref.model.var_to_name[vref.idx]
 function JuMP.set_name(vref::AbstractVariableRef, name::String)
     vref.model.var_to_name[vref.idx] = name
@@ -83,6 +89,13 @@ function JuMP.variable_by_name(model::RobustModel, name::String)
     end
 end
 
+
+# Names Constraints
+JuMP.name(cref::RobustConstraintRef) = cref.model.con_to_name[cref.idx]
+function JuMP.set_name(cref::RobustConstraintRef, name::String)
+    cref.model.con_to_name[cref.idx] = name
+    return cref.model.name_to_con = nothing
+end
 # Show
 function JuMP.show_backend_summary(io::IO, model::RobustModel) end
 function JuMP.show_objective_function_summary(io::IO, model::RobustModel)

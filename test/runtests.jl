@@ -14,7 +14,7 @@ using Test
 
     @variable(m, 1 <= x_interval <= 3.5,Decision(1,"test",m.uncertainVariables))
     #Add VariableTest
-    @testset "lowerbound" begin
+    @testset "variables" begin
         #init
         mod = RobustModel()
         #add vars
@@ -76,12 +76,12 @@ using Test
         
     end
 
-    @testset "constraint" begin
+    @testset "constraints" begin
         model = RobustModel() 
         @variable(model, 0 <= y <= 1,Uncertain(1))
-        @constraint(model, uncConst, 2y <= 1, UncertaintySetConstraint("1"))
-        #@constraint(model, modConst, 2y <= 1, UncertaintySet("1"))
-        print(uncConst)
+        @constraint(model, uncConst, 2y >= 1, UncertaintySetConstraint("1"))
+        @constraint(model, modConst, 2y <= 2, UncertainConstraint("1"))
+        @test name(uncConst) == "uncConst"
 
     end
  
