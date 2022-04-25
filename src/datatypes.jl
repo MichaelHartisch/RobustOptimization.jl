@@ -11,15 +11,15 @@ Base.copy(v::RobustVariableRef) = v
 
 mutable struct UncertainVariableRef <: RobustVariableRef
     model::RobustModel # `model` owning the variable
-    variable_index::Int       # Index of global variable
-    type_variable_index::Int    #Index of this specific type
+    idx::Int       # Index of global variable
+    type_idx::Int    #Index of this specific type
     Type::Char
 end
 
 mutable struct DecisionVariableRef <: RobustVariableRef
     model::RobustModel # `model` owning the variable
-    variable_index::Int       # Index of global variable
-    type_variable_index::Int    #Index of this specific type
+    idx::Int       # Index of global variable
+    type_idx::Int    #Index of this specific type
     Type::Char
 end
 
@@ -40,13 +40,13 @@ function JuMP.build_constraint(
     _error::Function,
     f::AffExpr,
     set::MOI.AbstractScalarSet,
-    extra::MyTag,
+    extra::MyTag
 )
     return RobustConstraint(extra.name,f,set)
 end
 
 function JuMP.add_constraint(
-    model::Model,
+    model::RobustModel,
     con::RobustConstraint,
     name::String,
 )

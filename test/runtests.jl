@@ -77,10 +77,10 @@ using Test
     end
 
     @testset "constraint" begin
-        model = Model() 
-        @variable(model, x)
-        @constraint(model, my_con, 2x <= 1, MyTag("my_prefix"))
-
+        model = RobustModel() 
+        @variable(model, 0 <= y <= 1,Uncertain(1))
+        @constraint(model, my_con, 2y <= 1, MyTag("my_prefix"))
+        print(my_con)
 
     end
  

@@ -56,9 +56,9 @@ include("variable_basics.jl")
 
 
 # Names
-JuMP.name(vref::AbstractVariableRef) = vref.model.var_to_name[vref.variable_index]
+JuMP.name(vref::AbstractVariableRef) = vref.model.var_to_name[vref.idx]
 function JuMP.set_name(vref::AbstractVariableRef, name::String)
-    vref.model.var_to_name[vref.variable_index] = name
+    vref.model.var_to_name[vref.idx] = name
     return vref.model.name_to_var = nothing
 end
 function JuMP.variable_by_name(model::RobustModel, name::String)

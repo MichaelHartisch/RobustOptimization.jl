@@ -9,13 +9,13 @@ function JuMP.add_variable(
 
     if typeof(v) == UncertainVariable
         vref = UncertainVariableRef(model, model.nextvaridx, length(model.uncertainVariables)+1,'U')
-        model.uncertainVariables[vref.type_variable_index] = v
+        model.uncertainVariables[vref.type_idx] = v
         model.var_index_to_type_index[model.nextvaridx]=length(model.uncertainVariables)
         model.type_index_to_var_index[length(model.uncertainVariables)]=model.nextvaridx
 
     elseif typeof(v) == DecisionVariable
         vref = DecisionVariableRef(model, model.nextvaridx, length(model.decisionVariables)+1,'D')
-        model.decisionVariables[vref.type_variable_index] = v
+        model.decisionVariables[vref.type_idx] = v
         model.var_index_to_type_index[model.nextvaridx]=length(model.decisionVariables)
         model.type_index_to_var_index[length(model.decisionVariables)]=model.nextvaridx
     end
@@ -62,11 +62,11 @@ JuMP.isequal_canonical(v::RobustVariableRef, w::RobustVariableRef) = v == w
 function JuMP.delete(model::RobustModel, vref::RobustVariableRef)
     @assert JuMP.is_valid(model, vref)
     if typeof(vref) == UncertainVariableRef
-        delete!(model.uncertainVariables, vref.type_variable_index)
+        delete!(model.uncertainVariables, vref.type_idx)
     elseif typeof(vref) == DecisionVariableRef
-        delete!(model.decisionVariables, vref.type_variable_index)
+        delete!(model.decisionVariables, vref.type_idx)
     end
-    return delete!(model.var_to_name, vref.variable_index)
+    return delete!(model.var_to_name, vref.idx)
 end
 
 
@@ -75,21 +75,21 @@ function JuMP.delete(model::RobustModel, vrefs::Vector{RobustVariableRef})
 end
 function JuMP.is_valid(model::RobustModel, vref::RobustVariableRef)
     if typeof(vref) == UncertainVariableRef
-        return (model === vref.model && vref.type_variable_index in keys(model.uncertainVariables))
+        return (model === vref.model && vref.type_idx in keys(model.uncertainVariables))
     else
-        return (model === vref.model && vref.type_variable_index in keys(model.decisionVariables))
+        return (model === vref.model && vref.type_idx in keys(model.decisionVariables))
     end
 end
 
 
-variable_info(vref::UncertainVariableRef) = vref.model.uncertainVariables[vref.type_variable_index].info
-variable_info(vref::DecisionVariableRef) = vref.model.decisionVariables[vref.type_variable_index].info
+variable_info(vref::UncertainVariableRef) = vref.model.uncertainVariables[vref.type_idx].info
+variable_info(vref::DecisionVariableRef) = vref.model.decisionVariables[vref.type_idx].info
 
 function update_variable_info(vref::RobustVariableRef, info::JuMP.VariableInfo)
     if typeof(vref) == UncertainVariableRef
-        return vref.model.uncertainVariables[vref.type_variable_index] = JuMP.ScalarVariable(info)
+        return vref.model.uncertainVariables[vref.type_idx] = JuMP.ScalarVariable(info)
     else
-        return vref.model.decisionVariables[vref.type_variable_index] = JuMP.ScalarVariable(info)
+        return vref.model.decisionVariables[vref.type_idx] = JuMP.ScalarVariable(info)
     end
 end
 
