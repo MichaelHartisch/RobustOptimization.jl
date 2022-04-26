@@ -10,9 +10,6 @@ Base.broadcastable(cref::RobustConstraintRef) = Ref(cref)
 
 
 
-
-
-
 function JuMP.build_constraint(
     _error::Function,
     fun::GenericAffExpr,
@@ -53,3 +50,7 @@ function JuMP.add_constraint(
     JuMP.set_name(cref,name)
     return cref
 end
+
+
+
+

@@ -4,7 +4,7 @@ end
 
 struct UncertaintySetConst{S} <: RobustConstraint{S}
     name::String
-    fun::GenericAffExpr
+    func::GenericAffExpr
     set::S
 end
 

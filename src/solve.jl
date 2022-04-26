@@ -9,4 +9,16 @@
 4  Formulate the robust counterpart
 5  Solve the (adjustable) robust counterpart 
 
+
+größer gleich
+klein gleich
+rhs
+Lhs
+ist es ein vektor
+coeffizienzten
+
+verschiedne Uncertentset
+uncertentyset link zu uncertain constraint
+
+
 """

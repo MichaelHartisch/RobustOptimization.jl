@@ -40,5 +40,7 @@ mutable struct UncertaintySetConstraintRef <: RobustConstraintRef
     type_idx::Int    #Index of this specific type
     Type::Char
 end
+abstract type AbstractDataObject end
 
-export RobustConstraint,UncertaintyConstraint,RobustConstraintRef
+
+export RobustConstraint,UncertaintyConstraint,RobustConstraintRef,AbstractDataObject,UncertaintySetConstraintRef

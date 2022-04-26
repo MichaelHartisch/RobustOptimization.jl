@@ -1,7 +1,8 @@
 module RobustOptimization
 
 using JuMP
-using MathOptInterface
+using MathOptInterface 
+const MOI = MathOptInterface
 
 
 
@@ -96,6 +97,32 @@ function JuMP.set_name(cref::RobustConstraintRef, name::String)
     cref.model.con_to_name[cref.idx] = name
     return cref.model.name_to_con = nothing
 end
+function JuMP.constraint_by_name(model::RobustModel, name::String)
+    if model.name_to_con === nothing
+        # Inspired from MOI/src/Utilities/model.jl
+
+        model.name_to_con = Dict{String,Int}()
+        for (con, con_name) in model.name_to_con
+         
+            if haskey(model.name_to_con, var_name)
+                # -1 is a special value that means this string does not map to
+                # a unique variable name.
+                model.name_to_con[con_name] = -1
+            else
+                model.name_to_con[con_name] = con
+            end
+        end
+    end
+    index = get(model.name_to_con, name, nothing)
+    if index isa Nothing
+        return nothing
+    elseif index == -1
+        error("Multiple Constraints have the name $name.")
+    else
+        return RobustConstraintRef(model, index)
+    end
+end
+
 # Show
 function JuMP.show_backend_summary(io::IO, model::RobustModel) end
 function JuMP.show_objective_function_summary(io::IO, model::RobustModel)
@@ -113,11 +140,26 @@ function JuMP.show_constraints_summary(io::IO, model::RobustModel)
     n = length(model.uncertainConstraints)
     return print(io, "Constraint", _plural(n), ": ", n)
 end
+function JuMP.constraint_string(print_mode, 
+    con::AbstractConstraint;
+    in_math_mode = false
+    )::String
+    func_str = function_string(print_mode,con.func)
+    in_set_str = in_set_string(print_mode,con.set)
+    return func_str * " " * in_set_str
+end
+shape(con::RobustConstraint) = con.shape
 function JuMP.constraints_string(print_mode, model::RobustModel)
     strings = String[]
     # Sort by creation order, i.e. Int value
-    uncertainConstraints = sort(collect(model.uncertainConstraints), by = c -> c.first.value)
+    uncertainConstraints = sort(collect(model.uncertainConstraints), by = c -> c.first)
+    print(uncertainConstraints)
     for (index, constraint) in uncertainConstraints
+        push!(strings, JuMP.constraint_string(print_mode, constraint))
+    end
+    uncertaintySetConstraints = sort(collect(model.uncertaintySetConstraints), by = c -> c.first)
+    print(uncertaintySetConstraints)
+    for (index, constraint) in uncertaintySetConstraints
         push!(strings, JuMP.constraint_string(print_mode, constraint))
     end
     return strings
