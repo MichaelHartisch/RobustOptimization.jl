@@ -10,7 +10,7 @@ MathOptInterface = "b8f27783-ece8-5eb3-8dc8-9495eed66fee"
 [compat]
 Coverage = "1"
 JuMP = "1.0.0"
-MathOptInterface = "1.0.0 - 1.1.1, 1"
+MathOptInterface = "1.0.0 - 1.1.1"
 
 
 [extras]
