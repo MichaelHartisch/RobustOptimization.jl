@@ -1,31 +1,79 @@
 module RobustOptimization
+using JuMP
+using HiGHS
+const MutableArithmetics = JuMP._MA;
+
+struct AddTwice
+    info::JuMP.VariableInfo
+end
+function JuMP.build_variable(
+    _err::Function,
+    info::JuMP.VariableInfo,
+    ::Type{AddTwice};
+    kwargs...
+)
+    println("Can also use $kwargs here.")
+    return AddTwice(info)
+end
+function JuMP.add_variable(
+    model::JuMP.Model,
+    duplicate::AddTwice,
+    name::String,
+)
+    a = JuMP.add_variable(
+        model,
+        JuMP.ScalarVariable(duplicate.info),
+        name * "_a",
+     )
+    b = JuMP.add_variable(
+        model,
+        JuMP.ScalarVariable(duplicate.info),
+        name * "_b",
+     )
+    return (a, b)
+end
+
+
 
 using JuMP
+using MathOptInterface 
+const MOI = MathOptInterface
 
-struct ConstraintIndex
-    value::Int # Index in `model.constraints`
-end
+
+
 mutable struct RobustModel <: JuMP.AbstractModel
-    nextvaridx::Int                                 # Next variable index is nextvaridx+1
-    uncertainVariables::Dict{Int,JuMP.ScalarVariable}       # Map varidx -> variable
+    nextconidx::Int          
+    nextvaridx::Int                         # Next variable index is nextvaridx+1
+    decisionVariables::Dict{Int,JuMP.AbstractVariable}
+    uncertainVariables::Dict{Int,JuMP.AbstractVariable}
+    var_index_to_type_index::Dict{Int,Int}
+    type_index_to_var_index::Dict{Int,Int}
     var_to_name::Dict{Int,String}                  # Map varidx -> name
     name_to_var::Union{Dict{String,Int},Nothing}  # Map varidx -> name
-    nextconidx::Int                                 # Next constraint index is nextconidx+1
-    uncertainConstraints::Dict{ConstraintIndex,JuMP.AbstractConstraint}      # Map conidx -> variable
-    con_to_name::Dict{ConstraintIndex,String}      # Map conidx -> name
-    name_to_con::Union{Dict{String,ConstraintIndex},Nothing}                     # Map name -> conidx
+    uncertaintySetConstraints::Dict{Int,JuMP.AbstractConstraint}      # Map conidx -> variable
+    uncertainConstraints::Dict{Int,JuMP.AbstractConstraint} 
+    con_index_to_type_index::Dict{Int,Int}
+    type_index_to_con_index::Dict{Int,Int}     # Map conidx -> variable
+    con_to_name::Dict{Int,String}      # Map conidx -> name
+    name_to_con::Union{Dict{String,Int},Nothing}                     # Map name -> conidx
     objectivesense::OptimizationSense
     uncertain_objective_function::JuMP.AbstractJuMPScalar
     obj_dict::Dict{Symbol,Any}
     function RobustModel()
         return new(
             0,
+            0,
             Dict{Int,JuMP.AbstractVariable}(),
+            Dict{Int,JuMP.AbstractVariable}(),
+            Dict{Int,Int}(),
+            Dict{Int,Int}(),
             Dict{Int,String}(),
             nothing,                        # Variables
-            0,
-            Dict{ConstraintIndex,JuMP.AbstractConstraint}(),
-            Dict{ConstraintIndex,String}(),
+            Dict{Int,JuMP.AbstractConstraint}(),
+            Dict{Int,JuMP.AbstractConstraint}(),
+            Dict{Int,Int}(),
+            Dict{Int,Int}(),
+            Dict{Int,String}(),
             nothing,            # Constraints
             FEASIBILITY_SENSE,
             zero(JuMP.GenericAffExpr{Float64,UncertainVariableRef}),
@@ -33,17 +81,23 @@ mutable struct RobustModel <: JuMP.AbstractModel
         )
     end
 end
+
+
+
 Base.broadcastable(model::RobustModel) = Ref(model)
 
 JuMP.object_dictionary(model::RobustModel) = model.obj_dict
-include("uncertain.jl")
+include("datatypes.jl")
+include("uncertain_variables.jl")
+include("decision_variables.jl")
+include("variable_basics.jl")
+include("constraints_basics.jl")
+include("uncertain_constraints.jl")
+include("uncertainty_set_constraints.jl")
 
-include("uncertainConstraints.jl")
-include("uncertainObjectiveFunction.jl")
-
-# Names
-JuMP.name(vref::UncertainVariableRef) = vref.model.var_to_name[vref.idx]
-function JuMP.set_name(vref::UncertainVariableRef, name::String)
+# Names Variables
+JuMP.name(vref::AbstractVariableRef) = vref.model.var_to_name[vref.idx]
+function JuMP.set_name(vref::AbstractVariableRef, name::String)
     vref.model.var_to_name[vref.idx] = name
     return vref.model.name_to_var = nothing
 end
@@ -70,20 +124,25 @@ function JuMP.variable_by_name(model::RobustModel, name::String)
         return UncertainVariableRef(model, index)
     end
 end
-JuMP.name(cref::UncertainConstraintRef) = cref.model.con_to_name[cref.index]
-function JuMP.set_name(cref::UncertainConstraintRef, name::String)
-    cref.model.con_to_name[cref.index] = name
+
+
+# Names Constraints
+JuMP.name(cref::RobustConstraintRef) = cref.model.con_to_name[cref.idx]
+function JuMP.set_name(cref::RobustConstraintRef, name::String)
+    cref.model.con_to_name[cref.idx] = name
     return cref.model.name_to_con = nothing
 end
 function JuMP.constraint_by_name(model::RobustModel, name::String)
     if model.name_to_con === nothing
         # Inspired from MOI/src/Utilities/model.jl
-        model.name_to_con = Dict{String,ConstraintIndex}()
-        for (con, con_name) in model.con_to_name
-            if haskey(model.name_to_con, con_name)
+
+        model.name_to_con = Dict{String,Int}()
+        for (con, con_name) in model.name_to_con
+         
+            if haskey(model.name_to_con, var_name)
                 # -1 is a special value that means this string does not map to
-                # a unique constraint name.
-                model.name_to_con[con_name] = ConstraintIndex(-1)
+                # a unique variable name.
+                model.name_to_con[con_name] = -1
             else
                 model.name_to_con[con_name] = con
             end
@@ -92,12 +151,10 @@ function JuMP.constraint_by_name(model::RobustModel, name::String)
     index = get(model.name_to_con, name, nothing)
     if index isa Nothing
         return nothing
-    elseif index.value == -1
-        error("Multiple constraints have the name $name.")
+    elseif index == -1
+        error("Multiple Constraints have the name $name.")
     else
-        # We have no information on whether this is a vector constraint
-        # or a scalar constraint
-        return JuMP.ConstraintRef(model, index, JuMP.ScalarShape())
+        return RobustConstraintRef(model, index)
     end
 end
 
@@ -118,18 +175,59 @@ function JuMP.show_constraints_summary(io::IO, model::RobustModel)
     n = length(model.uncertainConstraints)
     return print(io, "Constraint", _plural(n), ": ", n)
 end
+function JuMP.constraint_string(print_mode, 
+    con::AbstractConstraint;
+    in_math_mode = false
+    )::String
+    func_str = function_string(print_mode,con.func)
+    in_set_str = in_set_string(print_mode,con.set)
+    return func_str * " " * in_set_str
+end
+shape(con::RobustConstraint) = con.shape
 function JuMP.constraints_string(print_mode, model::RobustModel)
     strings = String[]
-    # Sort by creation order, i.e. ConstraintIndex value
-    uncertainConstraints = sort(collect(model.uncertainConstraints), by = c -> c.first.value)
+    # Sort by creation order, i.e. Int value
+    uncertainConstraints = sort(collect(model.uncertainConstraints), by = c -> c.first)
+    print(uncertainConstraints)
     for (index, constraint) in uncertainConstraints
+        push!(strings, JuMP.constraint_string(print_mode, constraint))
+    end
+    uncertaintySetConstraints = sort(collect(model.uncertaintySetConstraints), by = c -> c.first)
+    print(uncertaintySetConstraints)
+    for (index, constraint) in uncertaintySetConstraints
         push!(strings, JuMP.constraint_string(print_mode, constraint))
     end
     return strings
 end
 
 
+# Objective
+function JuMP.set_objective_function(m::RobustModel, f::JuMP.AbstractJuMPScalar)
+    return m.uncertain_objective_function = f
+end
+function JuMP.set_objective_function(m::RobustModel, f::Real)
+    return m.uncertain_objective_function = JuMP.GenericAffExpr{Float64,UncertainVariableRef}(f)
+end
+JuMP.objective_sense(model::RobustModel) = model.objectivesense
+function JuMP.set_objective_sense(model::RobustModel, sense)
+    return model.objectivesense = sense
+end
+JuMP.objective_function_type(model::RobustModel) = typeof(model.uncertain_objective_function)
+JuMP.objective_function(model::RobustModel) = model.uncertain_objective_function
+function JuMP.objective_function(model::RobustModel, FT::Type)
+    # InexactError should be thrown, this is needed in `objective.jl`
+    if !(model.uncertain_objective_function isa FT)
+        throw(
+            InexactError(
+                :objective_function,
+                FT,
+                typeof(model.uncertain_objective_function),
+            ),
+        )
+    end
+    return model.uncertain_objective_function::FT
+end
 
-
-testfunc() = 0
+JuMP.num_variables(m::RobustModel) = m.nextvaridx
+export RobustModel
 end
