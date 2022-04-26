@@ -1,6 +1,6 @@
 module RobustOptimization
 using JuMP
-using HiGHS
+#using HiGHS
 const MutableArithmetics = JuMP._MA;
 
 struct AddTwice
@@ -36,13 +36,13 @@ end
 
 
 using JuMP
-using MathOptInterface 
+using MathOptInterface
 const MOI = MathOptInterface
 
 
 
 mutable struct RobustModel <: JuMP.AbstractModel
-    nextconidx::Int          
+    nextconidx::Int
     nextvaridx::Int                         # Next variable index is nextvaridx+1
     decisionVariables::Dict{Int,JuMP.AbstractVariable}
     uncertainVariables::Dict{Int,JuMP.AbstractVariable}
@@ -51,7 +51,7 @@ mutable struct RobustModel <: JuMP.AbstractModel
     var_to_name::Dict{Int,String}                  # Map varidx -> name
     name_to_var::Union{Dict{String,Int},Nothing}  # Map varidx -> name
     uncertaintySetConstraints::Dict{Int,JuMP.AbstractConstraint}      # Map conidx -> variable
-    uncertainConstraints::Dict{Int,JuMP.AbstractConstraint} 
+    uncertainConstraints::Dict{Int,JuMP.AbstractConstraint}
     con_index_to_type_index::Dict{Int,Int}
     type_index_to_con_index::Dict{Int,Int}     # Map conidx -> variable
     con_to_name::Dict{Int,String}      # Map conidx -> name
@@ -138,7 +138,7 @@ function JuMP.constraint_by_name(model::RobustModel, name::String)
 
         model.name_to_con = Dict{String,Int}()
         for (con, con_name) in model.name_to_con
-         
+
             if haskey(model.name_to_con, var_name)
                 # -1 is a special value that means this string does not map to
                 # a unique variable name.
@@ -175,7 +175,7 @@ function JuMP.show_constraints_summary(io::IO, model::RobustModel)
     n = length(model.uncertainConstraints)
     return print(io, "Constraint", _plural(n), ": ", n)
 end
-function JuMP.constraint_string(print_mode, 
+function JuMP.constraint_string(print_mode,
     con::AbstractConstraint;
     in_math_mode = false
     )::String
