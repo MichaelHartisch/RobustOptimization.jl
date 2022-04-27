@@ -7,9 +7,9 @@ const MOI = MathOptInterface
     # Write your tests here.
     @testset "RobustOptimization.jl" begin
     # Write your tests here.
-  
+
     m = RobustModel()
-    
+
     @variable(m, 0 <= y <= 1,Uncertain(1))
 
 
@@ -23,7 +23,7 @@ const MOI = MathOptInterface
         @variable(mod, 0 <= z <= 1,Uncertain(1))
         @variable(mod, 1 <= x_interval <= 3.5,Decision(1,"test",mod.uncertainVariables))
 
-       
+
         #test add vars
         @test mod.var_to_name[3] == "x_interval"
         @test mod.var_to_name[1] == "y"
@@ -43,7 +43,7 @@ const MOI = MathOptInterface
         #test start value
         set_start_value(x_interval,2.0)
         @test start_value(x_interval) == 2.0
-        
+
         #test delete
         delete_lower_bound(x_interval)
         @test has_lower_bound(x_interval) == false
@@ -63,7 +63,7 @@ const MOI = MathOptInterface
         @test is_binary(x_interval) == true
         unset_binary(x_interval)
         @test is_binary(x_interval) == false
-        
+
         #test integer
         set_integer(x_interval)
         @test is_integer(x_interval) == true
@@ -72,20 +72,20 @@ const MOI = MathOptInterface
 
         #test delete
         decLen = length(mod.decisionVariables)
-        delete(mod,x_interval) 
+        delete(mod,x_interval)
         @test length(mod.decisionVariables)-decLen == -1
-        
+
     end
 
     @testset "constraints" begin
-        model = RobustModel() 
+        model = RobustModel()
         @variable(model, 0 <= y <= 1,Uncertain(1))
         @constraint(model, uncConst, 1.5y >= 1, UncertaintySetConstraint("1"))
         @constraint(model, modConst, 2y <= 2, UncertainConstraint("2"))
         @constraint(model, modConstt, 2y <= 2, UncertainConstraint("2"))
         @test name(uncConst) == "uncConst"
         print(model,"\n")
-        
+
         @test string(model.uncertainConstraints[uncConst.type_idx].func)== "2 y - 2"
         @test typeof(model.uncertainConstraints[uncConst.type_idx].set) == MathOptInterface.LessThan{Float64}
         #JuMP.coefficient() #model.uncertainConstraints[uncConst.type_idx], model.uncertainVariables[y.type_idx], 4)
@@ -95,7 +95,7 @@ const MOI = MathOptInterface
     end
 
 
-    
+
     #@constraint(m, c1, 2*x_interval + 2*y_interval <= 10)
     #@objective(m, Max, x_interval + y_interval)
     @test m.var_to_name[2] == "x_interval"
@@ -106,11 +106,11 @@ const MOI = MathOptInterface
     #@test con.set == MathOptInterface.LessThan{Float64}(10.0)
 
     ########### TEST Variable Basics
-    
 
 
 
-    print(m.objectivesense)
+
+    #print(m.objectivesense)
 end
 
 end

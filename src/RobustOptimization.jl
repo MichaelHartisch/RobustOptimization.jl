@@ -94,6 +94,7 @@ include("variable_basics.jl")
 include("constraints_basics.jl")
 include("uncertain_constraints.jl")
 include("uncertainty_set_constraints.jl")
+include("print.jl")
 
 # Names Variables
 JuMP.name(vref::AbstractVariableRef) = vref.model.var_to_name[vref.idx]
@@ -171,34 +172,9 @@ function JuMP.objective_function_string(print_mode, model::RobustModel)
     return JuMP.function_string(print_mode, JuMP.objective_function(model))
 end
 _plural(n) = (isone(n) ? "" : "s")
-function JuMP.show_constraints_summary(io::IO, model::RobustModel)
-    n = length(model.uncertainConstraints)
-    return print(io, "Constraint", _plural(n), ": ", n)
-end
-function JuMP.constraint_string(print_mode,
-    con::AbstractConstraint;
-    in_math_mode = false
-    )::String
-    func_str = function_string(print_mode,con.func)
-    in_set_str = in_set_string(print_mode,con.set)
-    return func_str * " " * in_set_str
-end
+
+
 shape(con::RobustConstraint) = con.shape
-function JuMP.constraints_string(print_mode, model::RobustModel)
-    strings = String[]
-    # Sort by creation order, i.e. Int value
-    uncertainConstraints = sort(collect(model.uncertainConstraints), by = c -> c.first)
-    print(uncertainConstraints)
-    for (index, constraint) in uncertainConstraints
-        push!(strings, JuMP.constraint_string(print_mode, constraint))
-    end
-    uncertaintySetConstraints = sort(collect(model.uncertaintySetConstraints), by = c -> c.first)
-    print(uncertaintySetConstraints)
-    for (index, constraint) in uncertaintySetConstraints
-        push!(strings, JuMP.constraint_string(print_mode, constraint))
-    end
-    return strings
-end
 
 
 # Objective
@@ -214,19 +190,7 @@ function JuMP.set_objective_sense(model::RobustModel, sense)
 end
 JuMP.objective_function_type(model::RobustModel) = typeof(model.uncertain_objective_function)
 JuMP.objective_function(model::RobustModel) = model.uncertain_objective_function
-function JuMP.objective_function(model::RobustModel, FT::Type)
-    # InexactError should be thrown, this is needed in `objective.jl`
-    if !(model.uncertain_objective_function isa FT)
-        throw(
-            InexactError(
-                :objective_function,
-                FT,
-                typeof(model.uncertain_objective_function),
-            ),
-        )
-    end
-    return model.uncertain_objective_function::FT
-end
+
 
 JuMP.num_variables(m::RobustModel) = m.nextvaridx
 export RobustModel
