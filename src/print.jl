@@ -74,6 +74,6 @@ function JuMP.show_constraints_summary(io::IO, model::RobustModel)
     n = length(model.uncertainConstraints)
     return print(io, "Constraint", _plural(n), ": ", n)
 
-    n_us = length(model.uncertainConstraints)
+    n_us = length(model.uncertaintySetConstraints)
     return print(io, "Uncertainty Set Constraint", _plural(n_us), ": ", n_us)
 end
