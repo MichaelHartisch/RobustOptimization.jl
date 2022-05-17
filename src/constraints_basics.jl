@@ -6,10 +6,6 @@ function Base.:(==)(v::RobustConstraintRef, w::RobustConstraintRef)::Bool
 end
 Base.broadcastable(cref::RobustConstraintRef) = Ref(cref)
 
-
-
-
-
 function JuMP.build_constraint(
     _error::Function,
     fun::GenericAffExpr,
@@ -88,18 +84,8 @@ function setUncConstVarCoeff(model::RobustModel,
     )
      model.uncertainConstraints[constRef.type_idx].func.terms[varRef] = varVal
 end
-function setSet(
-    model::RobustModel,
-    constRef::RobustConstraintRef,
-    setVal::String,
-    )
-  
-    if setVal == "<="
-        model.uncertainConstraints[constRef.type_idx].set = typeof(MathOptInterface.LessThan{Float64}(0.0))
-    elseif setVal == ">="
-        model.uncertainConstraints[constRef.type_idx].set = typeof(MathOptInterface.GreaterThan{Float64}(0.0))
-    end
-end
 
 
-export lhs,uncConstant,uncConstVarCoeff,setUncConstant,setUncConstVarCoeff,setSet
+
+export lhs,uncConstant,uncConstVarCoeff,setUncConstant,setUncConstVarCoeff
+
