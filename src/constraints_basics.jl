@@ -64,16 +64,42 @@ function lhs(model::RobustModel,
     )
     return model.uncertainConstraints[constRef.type_idx].func
 end
-function set_rhs()
+function uncConstant(model::RobustModel,
+    constRef::RobustConstraintRef,
+    )
+    return model.uncertainConstraints[constRef.type_idx].func.constant
 end
-function rhs()
+function uncConstVarCoeff(model::RobustModel,
+    constRef::RobustConstraintRef,
+    varRef::RobustVariableRef,
+    )
+    return model.uncertainConstraints[constRef.type_idx].func.terms[varRef]
 end
-function set()
-    
+function setUncConstant(model::RobustModel,
+    constRef::RobustConstraintRef,
+    constVal::Float64,
+    )
+    model.uncertainConstraints[constRef.type_idx].func.constant = constVal
 end
-function set_set()
+function setUncConstVarCoeff(model::RobustModel,
+    constRef::RobustConstraintRef,
+    varRef::RobustVariableRef,
+    varVal::Float64,
+    )
+     model.uncertainConstraints[constRef.type_idx].func.terms[varRef] = varVal
+end
+function setSet(
+    model::RobustModel,
+    constRef::RobustConstraintRef,
+    setVal::String,
+    )
+  
+    if setVal == "<="
+        model.uncertainConstraints[constRef.type_idx].set = typeof(MathOptInterface.LessThan{Float64}(0.0))
+    elseif setVal == ">="
+        model.uncertainConstraints[constRef.type_idx].set = typeof(MathOptInterface.GreaterThan{Float64}(0.0))
+    end
 end
 
 
-
-export lhs
+export lhs,uncConstant,uncConstVarCoeff,setUncConstant,setUncConstVarCoeff,setSet

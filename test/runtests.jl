@@ -85,20 +85,30 @@ const MOI = MathOptInterface
         @constraint(model, modConst, 2y <= 2, UncertainConstraint("2"))
         @constraint(model, modConstt, 2y <= 2, UncertainConstraint("2"))
         @test name(uncConst) == "uncConst"
-        print(model,"\n")
+        
         
       
         print("TESTETSTETS")
-        print(string(lhs(model,uncConst)))
+        
         @test string(lhs(model,uncConst)) == "2 y - 2"
+        
+        
+        setUncConstant(model,uncConst,-3.0)
+        @test uncConstant(model,uncConst) == -3.0
+        setUncConstVarCoeff(model,uncConst,y,3.0)
+        @test uncConstVarCoeff(model,uncConst,y) == 3.0
+        print(model.uncertainConstraints[uncConst.type_idx].set,"\n")
+        setSet(model,uncConst,">=")
+       
+
         print(string(typeof(model.uncertainConstraints[uncConst.type_idx].set)))
-        uncset == MathOptInterface.GreaterThan{Float64}
-        print(string(typeof(model.uncertainConstraints[uncConst.type_idx].set)))
+
+        #print(string(typeof(model.uncertainConstraints[uncConst.type_idx].set)))
         #@test typeof(model.uncertainConstraints[uncConst.type_idx].set) == MathOptInterface.LessThan{Float64}
 
         #JuMP.coefficient() #model.uncertainConstraints[uncConst.type_idx], model.uncertainVariables[y.type_idx], 4)
         #print(typeof(model.uncertainConstraints[uncConst.type_idx].func),"\n")
-
+        print(model,"\n")
 
     end
 
