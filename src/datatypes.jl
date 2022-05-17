@@ -26,7 +26,6 @@ abstract type RobustConstraint{S} <: AbstractConstraint end
 abstract type RobustConstraintRef end 
 
 
-
 mutable struct UncertainConstraintRef <: RobustConstraintRef
     model::RobustModel
     idx::Int64

@@ -52,5 +52,28 @@ function JuMP.add_constraint(
 end
 
 
+#function set_lhs(
+#    model::RobustModel,
+#    constRef::RobustConstraintRef,
+#    value::string,
+#    )
+#    model.uncertainConstraints[constRef.type_idx].func = value
+#end
+function lhs(model::RobustModel,
+    constRef::RobustConstraintRef,
+    )
+    return model.uncertainConstraints[constRef.type_idx].func
+end
+function set_rhs()
+end
+function rhs()
+end
+function set()
+    
+end
+function set_set()
+end
 
 
+
+export lhs
